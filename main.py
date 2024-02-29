@@ -10,6 +10,8 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 ROLE = range(1)
+walletAddress = '5HmprRDh4yqrHuinU8C9HwQzdvvZ7UP8UBY1jBC6KrPNReee'
+baseurl = 'https://api.testnet.debio.network'
 
 def start(update: Update, context: CallbackContext) -> int:
     username = update.message.from_user.username
@@ -29,6 +31,29 @@ def cancel(update: Update, context: CallbackContext) -> int:
 def role(update: Update, context: CallbackContext) -> int :
     return ConversationHandler.END
 
+def order(update: Update, context: CallbackContext) -> int :
+    url = f"{baseurl}/order/list/{walletAddress}"
+    response = requests.get(url)
+    if response.status_code == 200 :
+        update.message.reply_text(response)
+    else :
+        update.message.reply_text("Cant get Orders List")
+
+
+    return ConversationHandler.END
+
+def notification(update: Update, context: CallbackContext) -> int :
+    url = f"{baseurl}/notification/{walletAddress}"
+    response = requests.get(url)
+    if response.status_code == 200 :
+        update.message.reply_text(response)
+    else :
+        update.message.reply_text("Cant get Notification List")
+
+
+    return ConversationHandler.END
+
+
 def main():
 
     # Replace YOUR_API_KEY with your actual Telegram API key (not the Myriad api key)
@@ -47,6 +72,7 @@ def main():
 
     dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(CommandHandler('start', start))
+    dispatcher.add_handler(CommandHandler('orders', order))
     # Start the bot
     updater.start_polling()
 
