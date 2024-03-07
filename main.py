@@ -9,7 +9,7 @@ callback_url = "https://app.myriad.social/login"
 from datetime import datetime
 from bs4 import BeautifulSoup
 
-ROLE = range(1)
+ROLE, SELECTANALYSIS, ADDANALYSIS, OPTIONANALYSIS, OPTIONANALYST, SELECTTEST, ADDTEST, OPTIONTEST = range(8)
 walletAddress = '5HmprRDh4yqrHuinU8C9HwQzdvvZ7UP8UBY1jBC6KrPNReee'
 baseurl = 'https://api.testnet.debio.network'
 
@@ -23,6 +23,41 @@ def start(update: Update, context: CallbackContext) -> int:
     
     update.message.reply_text("Hi, please select your role")
     return ROLE
+
+def analysis(update: Update, context: CallbackContext) -> int :
+    username = update.message.from_user.username
+    update.message.reply_text("Hi, Do you want to upload genetic data or not?")
+
+    return OPTIONANALYSIS
+
+def option_analysis(update: Update, context: CallbackContext) -> int :
+    username = update.message.from_user.username
+    update.message.reply_text("Hi, Do you want to upload genetic data or not?")
+    content = update.message.text
+
+    if (content == 'yes') :
+        return ADDANALYSIS
+    elif (content == 'no') :
+        return SELECTANALYSIS
+    else :
+        update.message.reply_text('Input unknown.')
+        return ConversationHandler.END
+    
+def add_analysis(update: Update, context: CallbackContext) -> int :
+    update.message.reply_text("Please upload your genetic data")
+    return ConversationHandler.END
+
+def option_analyst(update: Update, context: CallbackContext) -> int :
+    update.message.reply_text("Please select genetic analyst")
+    return ConversationHandler.END
+
+def select_analysis(update: Update, context: CallbackContext) -> int :
+    update.message.reply_text("Please Select Genetic Data To be Sent to Genetic Analyst")
+    return ConversationHandler.END
+
+def option_test(update: Update, context: CallbackContext) -> int :
+    update.message.reply_text("Please Select the test provider")
+    return ConversationHandler.END
 
 def cancel(update: Update, context: CallbackContext) -> int:
     update.message.reply_text('Operation cancelled.')
@@ -70,9 +105,22 @@ def main():
         fallbacks=[CommandHandler('cancel', cancel)],
     )
 
+    analysis_handler = ConversationHandler(
+        entry_points=[CommandHandler('analysis', analysis)],
+        states={
+            OPTIONANALYSIS: [MessageHandler(Filters.text & ~Filters.command, option_analysis)],
+            OPTIONANALYST: [MessageHandler(Filters.text & ~Filters.command, option_analyst)],
+            SELECTANALYSIS: [MessageHandler(Filters.text & ~Filters.command, select_analysis)],
+            ADDANALYSIS: [MessageHandler(Filters.text & ~Filters.command, add_analysis)],
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+    )
+
     dispatcher.add_handler(conv_handler)
+    dispatcher.add_handler(analysis_handler)
     dispatcher.add_handler(CommandHandler('start', start))
     dispatcher.add_handler(CommandHandler('orders', order))
+    dispatcher.add_handler(CommandHandler('tests', option_test))
     # Start the bot
     updater.start_polling()
 
